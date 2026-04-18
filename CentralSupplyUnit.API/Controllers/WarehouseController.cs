@@ -1,12 +1,15 @@
 ﻿using CentralSupplyUnit.Core.Entities;
 using CentralSupplyUnit.Core.Interfaces.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CentralSupplyUnit.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class WarehouseController : ControllerBase
     {
         private readonly IWarehouseService _service;
@@ -33,9 +36,11 @@ namespace CentralSupplyUnit.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Manager")]
         public IActionResult Add([FromBody] Warehouse warehouse)
         {
-            var result = _service.Add(warehouse, 1); // userId مؤقت
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var result = _service.Add(warehouse, userId); 
 
             if (result.Contains("required") || result.Contains("unique"))
                 return BadRequest(result);
@@ -53,5 +58,6 @@ namespace CentralSupplyUnit.API.Controllers
 
             return Ok(result);
         }
+
     }
 }
