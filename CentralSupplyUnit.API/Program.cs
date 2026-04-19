@@ -27,6 +27,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IItemRepository, ItemRepository>();
 builder.Services.AddScoped<IItemService,ItemService>();
+builder.Services.AddScoped<ISupplyDocumentRepository, SupplyDocumentRepository>();
+builder.Services.AddScoped<ISupplyDocumentService, SupplyDocumentService>();
 #endregion
 
 #region Controllers

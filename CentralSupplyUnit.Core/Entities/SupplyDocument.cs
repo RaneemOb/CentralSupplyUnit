@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CentralSupplyUnit.Core.Enums;
+using System;
 using System.Collections.Generic;
 
 namespace CentralSupplyUnit.Core.Entities;
@@ -19,7 +20,7 @@ public partial class SupplyDocument
 
     public int ItemId { get; set; }
 
-    public int Status { get; set; }
+    public SupplyDocumentStatus Status { get; set; }
 
     public virtual User CreatedByNavigation { get; set; } = null!;
 
