@@ -25,8 +25,10 @@ builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenGenerator, JwtTokenGenerator>();
+
 builder.Services.AddScoped<IItemRepository, ItemRepository>();
-builder.Services.AddScoped<IItemService,ItemService>();
+builder.Services.AddScoped<IItemService, ItemService>();
+
 builder.Services.AddScoped<ISupplyDocumentRepository, SupplyDocumentRepository>();
 builder.Services.AddScoped<ISupplyDocumentService, SupplyDocumentService>();
 #endregion
@@ -98,6 +100,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 #endregion
+
+#region CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularApp", policy =>
@@ -109,22 +113,32 @@ builder.Services.AddCors(options =>
             .AllowCredentials();
     });
 });
+#endregion
+
 var app = builder.Build();
+
+#region Middleware
 app.UseCors("AllowAngularApp");
-#region Middleware Pipeline
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Central Supply Unit API v1");
+        c.RoutePrefix = ""; // 👈 Swagger as default route
+    });
 }
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication();   // 🔥 لازم قبل Authorization
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// optional safety fallback
+app.MapGet("/", () => Results.Redirect("/"));
 
 #endregion
 
