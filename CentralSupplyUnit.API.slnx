@@ -1,7 +1,4 @@
 <Solution>
-  <Folder Name="/Database/">
-    <File Path="../../../Documents/CentralSupplyUnitScript.sql" />
-  </Folder>
   <Project Path="CentralSupplyUnit.API/CentralSupplyUnit.API.csproj" />
   <Project Path="CentralSupplyUnit.Core/CentralSupplyUnit.Core.csproj" />
   <Project Path="CentralSupplyUnit.Infra/CentralSupplyUnit.Infra.csproj" />
