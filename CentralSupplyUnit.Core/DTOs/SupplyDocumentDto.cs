@@ -13,7 +13,7 @@ namespace CentralSupplyUnit.Core.DTOs
 
             public string WarehouseName { get; set; }
             public string ItemName { get; set; }
-            public string CreatedByName { get; set; }   // 👈 جديد
+            public string CreatedByName { get; set; }   
 
             public int StatusId { get; set; }
             public string StatusName { get; set; }

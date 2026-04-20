@@ -28,7 +28,6 @@ namespace CentralSupplyUnit.Core.Service
             {
                 Name = dto.Name,
                 Description = dto.Description,
-                WarehouseId = dto.WarehouseId,
                 Quantity = dto.Quantity,
             };
 

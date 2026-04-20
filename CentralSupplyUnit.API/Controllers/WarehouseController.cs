@@ -1,5 +1,7 @@
-﻿using CentralSupplyUnit.Core.Entities;
+﻿using CentralSupplyUnit.Core.DTOs;
+using CentralSupplyUnit.Core.Entities;
 using CentralSupplyUnit.Core.Interfaces.Service;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,8 +21,16 @@ namespace CentralSupplyUnit.API.Controllers
             _service = service;
         }
 
-        [HttpGet]
-        public IActionResult GetAll()
+        [HttpGet("GetMyWarehouses")]
+        [Authorize(Roles = "Manager")]
+        public IActionResult GetMyWarehouses()
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            return Ok(_service.GetAll(userId));
+        }
+        [HttpGet("GetAllWarehouses")]
+        [Authorize(Roles = "Employee")]
+        public IActionResult GetAllWarehouses()
         {
             return Ok(_service.GetAll());
         }
@@ -37,26 +47,42 @@ namespace CentralSupplyUnit.API.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Manager")]
-        public IActionResult Add([FromBody] Warehouse warehouse)
+        public IActionResult AddWithItems( AddWarehouseDto dto)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var result = _service.Add(warehouse, userId); 
 
-            if (result.Contains("required") || result.Contains("unique"))
-                return BadRequest(result);
 
-            return Ok(result);
+            var result = _service.Add(dto, userId);
+
+            if (result == "Warehouse added successfully")
+                return Ok(new { message = result });
+
+            return BadRequest(new { message = result });
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        [HttpDelete]
+        [Authorize(Roles = "Manager")]
+        public IActionResult Delete([FromBody] List<int> ids)
         {
-            var result = _service.Delete(id);
+            var result = _service.Delete(ids);
 
             if (result.Contains("not found"))
                 return NotFound(result);
 
             return Ok(result);
+        }
+        [HttpGet("export")]
+        [Authorize(Roles = "Manager")]
+        public IActionResult ExportWarehouses()
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var fileBytes = _service.ExportWarehousesToExcel(userId);
+
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "Warehouses.xlsx"
+            );
         }
 
     }

@@ -98,9 +98,19 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 #endregion
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngularApp", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:62836", "http://localhost:4200")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
 var app = builder.Build();
-
+app.UseCors("AllowAngularApp");
 #region Middleware Pipeline
 
 if (app.Environment.IsDevelopment())

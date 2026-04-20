@@ -1,10 +1,12 @@
-﻿using CentralSupplyUnit.Core.Entities;
+﻿using CentralSupplyUnit.Core.DTOs;
+using CentralSupplyUnit.Core.Entities;
 using CentralSupplyUnit.Core.Interfaces.Repository;
 using CentralSupplyUnit.Infra.Data;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 
 namespace CentralSupplyUnit.Infra.Repository
@@ -18,10 +20,17 @@ namespace CentralSupplyUnit.Infra.Repository
             _context = context;
         }
 
-        public List<Warehouse> GetAll()
+        public List<WarehouseItemFlatDto> GetAll(int userId)
         {
-            return _context.Warehouses
-                .FromSqlRaw("EXEC sp_GetWarehouses")
+            return _context.Set<WarehouseItemFlatDto>()
+                .FromSqlRaw("EXEC sp_GetWarehousesWithItemsByUser @UserId",
+                    new SqlParameter("@UserId", userId))
+                .ToList();
+        }
+        public List<WarehouseItemFlatDto> GetAll()
+        {
+            return _context.Set<WarehouseItemFlatDto>()
+                .FromSqlRaw("EXEC sp_GetAllWarehousesWithItems")
                 .ToList();
         }
 
@@ -34,21 +43,69 @@ namespace CentralSupplyUnit.Infra.Repository
                 .FirstOrDefault();
         }
 
-        public void Add(Warehouse warehouse)
+        public string Add(AddWarehouseDto dto, int userId)
         {
-            _context.Database.ExecuteSqlRaw(
-                "EXEC sp_AddWarehouse @Name, @Description, @CreatedBy",
-                new SqlParameter("@Name", warehouse.Name),
-                new SqlParameter("@Description", (object?)warehouse.Description ?? DBNull.Value),
-                new SqlParameter("@CreatedBy", warehouse.CreatedBy)
-            );
+            var table = new DataTable();
+            table.Columns.Add("Name", typeof(string));
+            table.Columns.Add("Description", typeof(string));
+            table.Columns.Add("Quantity", typeof(int));
+
+            foreach (var item in dto.Items)
+            {
+                table.Rows.Add(
+                    item.Name,
+                    item.Description ?? (object)DBNull.Value,
+                    item.Quantity
+                );
+            }
+
+            var parameters = new[]
+            {
+        new SqlParameter("@Name", dto.Name),
+        new SqlParameter("@Description", dto.Description ?? (object)DBNull.Value),
+        new SqlParameter("@CreatedBy", userId),
+        new SqlParameter("@Items", table)
+        {
+            TypeName = "ItemTableType",
+            SqlDbType = SqlDbType.Structured
+        }
+    };
+
+            try
+            {
+                _context.Database.ExecuteSqlRaw(
+                    "EXEC sp_AddWarehouseWithItems @Name, @Description, @CreatedBy, @Items",
+                    parameters
+                );
+
+                return "Warehouse added successfully";
+            }
+            catch (SqlException ex)
+            {
+                return ex.Message;
+            }
+
         }
 
-        public void Delete(int id)
+        public void Delete(List<int> ids)
         {
+            var table = new DataTable();
+            table.Columns.Add("Id", typeof(int));
+
+            foreach (var id in ids)
+            {
+                table.Rows.Add(id);
+            }
+
+            var parameter = new SqlParameter("@Ids", table)
+            {
+                TypeName = "IdList",
+                SqlDbType = SqlDbType.Structured
+            };
+
             _context.Database.ExecuteSqlRaw(
-                "EXEC sp_DeleteWarehouse @Id",
-                new SqlParameter("@Id", id)
+                "EXEC sp_DeleteWarehouses @Ids",
+                parameter
             );
         }
     }

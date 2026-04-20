@@ -1,4 +1,5 @@
-﻿using CentralSupplyUnit.Core.Entities;
+﻿using CentralSupplyUnit.Core.DTOs;
+using CentralSupplyUnit.Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,9 +8,11 @@ namespace CentralSupplyUnit.Core.Interfaces.Service
 {
     public interface IWarehouseService
     {
-        List<Warehouse> GetAll();
+        List<WarehouseDto> GetAll(int userId);
+        List<WarehouseDto> GetAll();
         Warehouse GetById(int id);
-        string Add(Warehouse warehouse, int userId);
-        string Delete(int id);
+        string Add(AddWarehouseDto dto, int userId);
+        string Delete(List<int> ids);
+        byte[] ExportWarehousesToExcel(int userId);
     }
 }

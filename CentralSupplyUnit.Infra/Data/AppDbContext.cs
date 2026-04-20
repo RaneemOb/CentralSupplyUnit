@@ -34,6 +34,7 @@ public partial class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<SupplyDocumentDto>().HasNoKey();
+        modelBuilder.Entity<WarehouseItemFlatDto>().HasNoKey();
         modelBuilder.Entity<Item>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Item__3214EC07F108E536");
